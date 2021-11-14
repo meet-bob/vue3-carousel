@@ -49,6 +49,11 @@ export default defineComponent({
       default: defaultConfigs.wrapAround,
       type: Boolean,
     },
+    // control infinite scrolling mode
+    directionRight: {
+      default: defaultConfigs.directionRight,
+      type: Boolean,
+    },
     // control snap position alignment
     snapAlign: {
       default: defaultConfigs.snapAlign,
@@ -208,7 +213,7 @@ export default defineComponent({
         config,
         currentSlideIndex.value,
         maxSlideIndex.value,
-        minSlideIndex.value
+        minSlideIndex.value,
       );
     }
 
@@ -310,7 +315,7 @@ export default defineComponent({
         config,
         currentSlideIndex.value - draggedSlides,
         maxSlideIndex.value,
-        minSlideIndex.value
+        minSlideIndex.value,
       );
       slideTo(newSlide);
 
@@ -338,6 +343,7 @@ export default defineComponent({
      * Navigation function
      */
     const isSliding = ref(false);
+
     function slideTo(slideIndex: number, mute = false): void {
       if (currentSlideIndex.value === slideIndex || isSliding.value) {
         return;
@@ -366,20 +372,37 @@ export default defineComponent({
     }
 
     function next(): void {
-      let nextSlide = currentSlideIndex.value + config.itemsToScroll;
-      if (!config.wrapAround) {
-        nextSlide = Math.min(nextSlide, maxSlideIndex.value);
+      if (config.directionRight) {
+        let prevSlide = currentSlideIndex.value - config.itemsToScroll;
+        if (!config.wrapAround) {
+          prevSlide = Math.max(prevSlide, minSlideIndex.value);
+        }
+        slideTo(prevSlide);
+      } else {
+        let nextSlide = currentSlideIndex.value + config.itemsToScroll;
+        if (!config.wrapAround) {
+          nextSlide = Math.min(nextSlide, maxSlideIndex.value);
+        }
+        slideTo(nextSlide);
       }
-      slideTo(nextSlide);
     }
 
     function prev(): void {
-      let prevSlide = currentSlideIndex.value - config.itemsToScroll;
-      if (!config.wrapAround) {
-        prevSlide = Math.max(prevSlide, minSlideIndex.value);
+      if (config.directionRight) {
+        let nextSlide = currentSlideIndex.value + config.itemsToScroll;
+        if (!config.wrapAround) {
+          nextSlide = Math.min(nextSlide, maxSlideIndex.value);
+        }
+        slideTo(nextSlide);
+      } else {
+        let prevSlide = currentSlideIndex.value - config.itemsToScroll;
+        if (!config.wrapAround) {
+          prevSlide = Math.max(prevSlide, minSlideIndex.value);
+        }
+        slideTo(prevSlide);
       }
-      slideTo(prevSlide);
     }
+
     const nav: CarouselNav = { slideTo, next, prev };
     provide('nav', nav);
 
@@ -450,7 +473,7 @@ export default defineComponent({
       slides.value = slidesElements;
       // Bind slide order
       slidesElements.forEach(
-        (el: { props: { [key: string]: any } }, index: number) => (el.props.index = index)
+        (el: { props: { [key: string]: any } }, index: number) => (el.props.index = index),
       );
       const trackEl = h(
         'ol',
@@ -460,7 +483,7 @@ export default defineComponent({
           onMousedown: config.mouseDrag ? handleDragStart : null,
           onTouchstart: config.touchDrag ? handleDragStart : null,
         },
-        slidesElements
+        slidesElements,
       );
       const viewPortEl = h('div', { class: 'carousel__viewport' }, trackEl);
 
@@ -473,7 +496,7 @@ export default defineComponent({
           onMouseenter: handleMouseEnter,
           onMouseleave: handleMouseLeave,
         },
-        [viewPortEl, addonsElements]
+        [viewPortEl, addonsElements],
       );
     };
   },

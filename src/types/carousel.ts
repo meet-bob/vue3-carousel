@@ -7,6 +7,7 @@ export interface CarouselConfig {
   autoplay?: number;
   snapAlign: 'start' | 'end' | 'center' | 'center-even' | 'center-odd';
   wrapAround?: boolean;
+  directionRight: boolean;
   pauseAutoplayOnHover?: boolean;
   mouseDrag?: boolean;
   touchDrag?: boolean;
